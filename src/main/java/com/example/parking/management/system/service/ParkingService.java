@@ -1,8 +1,9 @@
 package com.example.parking.management.system.service;
 
 import com.example.parking.management.system.model.Vehicle;
+import com.example.parking.management.system.model.dto.VehicleDto;
+import com.example.parking.management.system.repository.ParkingSpaceRepository;
 import com.example.parking.management.system.repository.VehicleRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -13,17 +14,18 @@ public class ParkingService {
     private static final int MAX_CAPACITY = 200;
 
     private final VehicleRepository vehicleRepository;
+    private final ParkingSpaceRepository parkingSpaceRepository;
 
-    @Autowired
-    public ParkingService(VehicleRepository vehicleRepository) {
+    public ParkingService(VehicleRepository vehicleRepository, ParkingSpaceRepository parkingSpaceRepository) {
 
         this.vehicleRepository = vehicleRepository;
+        this.parkingSpaceRepository = parkingSpaceRepository;
     }
 
-    public int getAvailableSpaces() {
+    public int getAvailableSpacesCount() {
 
-//        TODO - logic for calculation of available spaces
-        return 0;
+        int occupiedSpaces = vehicleRepository.findAll().size();
+        return MAX_CAPACITY - occupiedSpaces;
     }
 
     public double calculateDueAmount(Long vehicleId) {
@@ -47,11 +49,18 @@ public class ParkingService {
         return 0.0;
     }
 
-    public Long registerVehicle(Vehicle vehicle) {
+    public String registerVehicle(VehicleDto vehicleDto) {
 
-//        TODO save the vehcile into the db and return the vehicle with id
+        Vehicle vehicle = new Vehicle();
 
-        return null;
+        vehicle.setVehicleNumber(vehicleDto.getVehicleNumber());
+        vehicle.setCategory(vehicleDto.getCategory());
+        vehicle.setEntryTime(LocalDateTime.now());
+        vehicle.setDiscountCard(vehicleDto.getDiscountCard());
+
+        vehicleRepository.save(vehicle);
+
+        return vehicle.getVehicleNumber();
     }
 
     public void deregisterVehicle(Long vehicleId) {

@@ -1,36 +1,41 @@
 package com.example.parking.management.system.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "vehicles")
 public class Vehicle {
 
-    private Long id;
+    @Id
+    @Column(name = "vehicle_number", columnDefinition = "varchar(255)")
+    private String vehicleNumber;
 
+    @Column(name = "category")
     private String category;
 
+    @Column(name = "entry_time")
     private LocalDateTime entryTime;
 
+    @Column(name = "exit_time")
     private LocalDateTime exitTime;
 
+    @Column(name = "discount_card")
     private String discountCard;
 
-    public Vehicle(Long id, String category, LocalDateTime entryTime, LocalDateTime exitTime, String discountCard) {
 
-        this.id = id;
-        this.category = category;
-        this.entryTime = entryTime;
-        this.exitTime = exitTime;
-        this.discountCard = discountCard;
+    public String getVehicleNumber() {
+
+        return vehicleNumber;
     }
 
-    public Long getId() {
+    public void setVehicleNumber(String id) {
 
-        return id;
-    }
-
-    public void setId(Long id) {
-
-        this.id = id;
+        this.vehicleNumber = id;
     }
 
     public String getCategory() {
@@ -76,7 +81,7 @@ public class Vehicle {
     @Override
     public String toString() {
         return "Vehicle{" +
-                "id=" + id +
+                "id=" + vehicleNumber +
                 ", category='" + category + '\'' +
                 ", entryTime=" + entryTime +
                 ", exitTime=" + exitTime +
