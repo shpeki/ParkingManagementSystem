@@ -5,11 +5,13 @@ import com.example.parking.management.system.model.Vehicle;
 import com.example.parking.management.system.model.dto.VehicleDto;
 import com.example.parking.management.system.repository.ParkingSpaceRepository;
 import com.example.parking.management.system.repository.VehicleRepository;
+import com.example.parking.management.system.util.DiscountCard;
 import com.example.parking.management.system.util.VehicleCategory;
 import org.springframework.stereotype.Service;
 
-import javax.management.Query;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Service
 public class ParkingService {
@@ -29,29 +31,106 @@ public class ParkingService {
 
         Integer sumOfSpaceNumbers = parkingSpaceRepository.calculateSumOfSpaceNumbers();
         int occupiedSpaces = sumOfSpaceNumbers != null ? sumOfSpaceNumbers : 0;
-        
+
         return MAX_CAPACITY - occupiedSpaces;
     }
 
-    public double calculateDueAmount(Long vehicleId) {
+    public double calculateDueAmount(String vehicleNumber) {
 
-//        TODO find the vehicle(throw error if not exist)
-//        TODO get category of the vehicle, day/night and discount card
-//        TODO get discount card
+        Vehicle vehicle = vehicleRepository.findByVehicleNumber(vehicleNumber);
 
-        return 0.0;
+        LocalDateTime entryTime = vehicle.getEntryTime();
+        vehicle.setExitTime(LocalDateTime.now());
+        LocalDateTime exitTime = vehicle.getExitTime();
+
+        double hourlyRate;
+
+        if (vehicle.getCategory().equals(VehicleCategory.A.name())) {
+
+            hourlyRate = isDayTime(entryTime, exitTime) ? 3.0 : 2.0;
+
+        } else if (vehicle.getCategory().equals(VehicleCategory.B.name())) {
+
+            hourlyRate = isDayTime(entryTime, exitTime) ? 6.0 : 4.0;
+
+        } else if (vehicle.getCategory().equals(VehicleCategory.C.name())) {
+
+            hourlyRate = isDayTime(entryTime, exitTime) ? 12.0 : 8.0;
+
+        } else {
+
+            return 0.0;
+        }
+
+        double duration = calculateDuration(entryTime, exitTime);
+
+        double amount = hourlyRate * duration;
+
+        amount -= applyDiscount(vehicle.getDiscountCard(), amount);
+
+        return amount;
     }
 
     private boolean isDayTime(LocalDateTime entryTime, LocalDateTime exitTime) {
 
-//        TODO - logic for calculation of day/night
-        return false;
+        LocalDateTime daytimeStart = LocalDateTime.of(LocalDate.now(), LocalTime.of(8, 0));
+        LocalDateTime daytimeEnd = LocalDateTime.of(LocalDate.now(), LocalTime.of(18, 0));
+
+        boolean isDaytime;
+
+        if (exitTime.isBefore(daytimeStart) || exitTime.equals(daytimeStart)) {
+
+            isDaytime = !entryTime.isAfter(exitTime);
+
+        } else if (entryTime.isAfter(daytimeEnd) || entryTime.equals(daytimeEnd)) {
+
+            isDaytime = !exitTime.isBefore(entryTime);
+
+        } else {
+
+            isDaytime = true;
+        }
+
+        return isDaytime;
+
     }
 
     private double calculateDuration(LocalDateTime entryTime, LocalDateTime exitTime) {
 
-//        TODO - logic for calculation of duration
-        return 0.0;
+        int entryHour = entryTime.getHour();
+        int entryMinute = entryTime.getMinute();
+        int exitHour = exitTime.getHour();
+        int exitMinute = exitTime.getMinute();
+
+        int hours = exitHour - entryHour;
+        int minutes = exitMinute - entryMinute;
+
+        if (minutes < 0) {
+            hours--;
+            minutes += 60;
+        }
+
+        return hours + (minutes / 60.0);
+    }
+
+    private double applyDiscount(String discountCard, double dueAmount) {
+
+        if (discountCard.equals(DiscountCard.Silver.name())) {
+
+            return dueAmount * 0.9;
+
+        } else if (discountCard.equals(DiscountCard.Gold.name())) {
+
+            return dueAmount * 0.85;
+
+        } else if (discountCard.equals(DiscountCard.Platinum.name())) {
+
+            return dueAmount * 0.80;
+
+        } else {
+
+            return 0.0;
+        }
     }
 
     public String registerVehicle(VehicleDto vehicleDto) throws Exception {
@@ -84,15 +163,17 @@ public class ParkingService {
         return vehicle.getVehicleNumber();
     }
 
-    public void deregisterVehicle(Long vehicleId) {
+    public double deregisterVehicle(String vehicleNumber) {
 
-//        TODO find and delete the vehicle(throw error if not exist)
-    }
+        double dueAmount = calculateDueAmount(vehicleNumber);
 
-    private double applyDiscount(double dueAmount, String discountCard) {
+        Vehicle vehicle = vehicleRepository.findByVehicleNumber(vehicleNumber);
+        vehicleRepository.delete(vehicle);
 
-//        TODO - logic for calculation of discount
-        return 0.0;
+        ParkingSpace parkingSpace = parkingSpaceRepository.findByVehicleNumber(vehicleNumber);
+        parkingSpaceRepository.delete(parkingSpace);
+
+        return dueAmount;
     }
 
     private int getRequiredSpacesForCategory(String category) {

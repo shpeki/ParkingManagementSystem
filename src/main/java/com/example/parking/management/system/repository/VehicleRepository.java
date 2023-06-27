@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
+    Vehicle findByVehicleNumber(String vehicleNumber);
 }

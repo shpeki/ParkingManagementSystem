@@ -1,6 +1,5 @@
 package com.example.parking.management.system.controller;
 
-import com.example.parking.management.system.model.Vehicle;
 import com.example.parking.management.system.model.dto.VehicleDto;
 import com.example.parking.management.system.service.ParkingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +27,11 @@ public class ParkingController {
         return parkingService.getAvailableSpacesCount();
     }
 
-    @GetMapping("/due-amount/{vehicleId}")
-    public double calculateAmount(@PathVariable Long vehicleId) {
+    @GetMapping("/due-amount/{vehicleNumber}")
+    public ResponseEntity<Double> calculateAmount(@PathVariable String vehicleNumber) {
 
-        return parkingService.calculateDueAmount(vehicleId);
+        return ResponseEntity.ok(parkingService.calculateDueAmount(vehicleNumber.toUpperCase()));
+
     }
 
     @PostMapping(value = "/register-vehicle", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -40,7 +40,7 @@ public class ParkingController {
         try {
 
             parkingService.registerVehicle(vehicle);
-            return ResponseEntity.ok(vehicle.getVehicleNumber());
+            return ResponseEntity.ok(vehicle.getVehicleNumber().toUpperCase());
 
         } catch (Exception e) {
 
@@ -48,10 +48,11 @@ public class ParkingController {
         }
     }
 
-    @DeleteMapping("/deregister-vehicle/{vehicleId}")
-    public void deregisterVehicle(@PathVariable Long vehicleId) {
+    @DeleteMapping("/deregister-vehicle/{vehicleNumber}")
+    public ResponseEntity<Double> deregisterVehicle(@PathVariable String vehicleNumber) {
 
-        parkingService.deregisterVehicle(vehicleId);
+        return ResponseEntity.ok(parkingService.deregisterVehicle(vehicleNumber.toUpperCase()));
+
     }
 
 
