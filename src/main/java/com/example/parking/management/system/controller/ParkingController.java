@@ -5,6 +5,7 @@ import com.example.parking.management.system.model.dto.VehicleDto;
 import com.example.parking.management.system.service.ParkingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -34,9 +35,17 @@ public class ParkingController {
     }
 
     @PostMapping(value = "/register-vehicle", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public String registerVehicle(@RequestBody VehicleDto vehicle) {
+    public ResponseEntity<String> registerVehicle(@RequestBody VehicleDto vehicle) {
 
-        return parkingService.registerVehicle(vehicle);
+        try {
+
+            parkingService.registerVehicle(vehicle);
+            return ResponseEntity.ok(vehicle.getVehicleNumber());
+
+        } catch (Exception e) {
+
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/deregister-vehicle/{vehicleId}")

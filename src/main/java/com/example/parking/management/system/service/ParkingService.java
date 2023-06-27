@@ -1,11 +1,14 @@
 package com.example.parking.management.system.service;
 
+import com.example.parking.management.system.model.ParkingSpace;
 import com.example.parking.management.system.model.Vehicle;
 import com.example.parking.management.system.model.dto.VehicleDto;
 import com.example.parking.management.system.repository.ParkingSpaceRepository;
 import com.example.parking.management.system.repository.VehicleRepository;
+import com.example.parking.management.system.util.VehicleCategory;
 import org.springframework.stereotype.Service;
 
+import javax.management.Query;
 import java.time.LocalDateTime;
 
 @Service
@@ -24,7 +27,9 @@ public class ParkingService {
 
     public int getAvailableSpacesCount() {
 
-        int occupiedSpaces = vehicleRepository.findAll().size();
+        Integer sumOfSpaceNumbers = parkingSpaceRepository.calculateSumOfSpaceNumbers();
+        int occupiedSpaces = sumOfSpaceNumbers != null ? sumOfSpaceNumbers : 0;
+        
         return MAX_CAPACITY - occupiedSpaces;
     }
 
@@ -49,9 +54,17 @@ public class ParkingService {
         return 0.0;
     }
 
-    public String registerVehicle(VehicleDto vehicleDto) {
+    public String registerVehicle(VehicleDto vehicleDto) throws Exception {
 
         Vehicle vehicle = new Vehicle();
+
+        int requiredSpaces = getRequiredSpacesForCategory(vehicleDto.getCategory());
+
+        if (requiredSpaces > getAvailableSpacesCount()) {
+
+            throw new Exception("No available spaces");
+        }
+
 
         vehicle.setVehicleNumber(vehicleDto.getVehicleNumber());
         vehicle.setCategory(vehicleDto.getCategory());
@@ -59,6 +72,14 @@ public class ParkingService {
         vehicle.setDiscountCard(vehicleDto.getDiscountCard());
 
         vehicleRepository.save(vehicle);
+
+        ParkingSpace parkingSpace = new ParkingSpace();
+
+        parkingSpace.setSpaceNumber(requiredSpaces);
+
+        parkingSpace.setVehicleNumber(vehicleDto.getVehicleNumber());
+
+        parkingSpaceRepository.save(parkingSpace);
 
         return vehicle.getVehicleNumber();
     }
@@ -76,7 +97,18 @@ public class ParkingService {
 
     private int getRequiredSpacesForCategory(String category) {
 
-//        TODO - logic for calculation of required spaces for category
-        return 0;
+        if (category.equals(VehicleCategory.A.name())) {
+
+            return 1;
+        } else if (category.equals(VehicleCategory.B.name())) {
+
+            return 2;
+        } else if (category.equals(VehicleCategory.C.name())) {
+
+            return 4;
+        } else {
+
+            return -1;
+        }
     }
 }
