@@ -1,5 +1,8 @@
 package com.example.parking.management.system.service;
 
+import com.example.parking.management.system.exceptions.NoAvailableSpacesException;
+import com.example.parking.management.system.exceptions.VehicleAlreadyRegisteredException;
+import com.example.parking.management.system.exceptions.VehicleNotFoundException;
 import com.example.parking.management.system.model.ParkingSpace;
 import com.example.parking.management.system.model.Vehicle;
 import com.example.parking.management.system.model.dto.VehicleDto;
@@ -35,9 +38,14 @@ public class ParkingService {
         return MAX_CAPACITY - occupiedSpaces;
     }
 
-    public double calculateDueAmount(String vehicleNumber) {
+    public double calculateDueAmount(String vehicleNumber) throws VehicleNotFoundException {
 
         Vehicle vehicle = vehicleRepository.findByVehicleNumber(vehicleNumber);
+
+        if (vehicle == null) {
+
+            throw new VehicleNotFoundException("Vehicle not found");
+        }
 
         LocalDateTime entryTime = vehicle.getEntryTime();
         vehicle.setExitTime(LocalDateTime.now());
@@ -66,7 +74,7 @@ public class ParkingService {
 
         double amount = hourlyRate * duration;
 
-        amount -= applyDiscount(vehicle.getDiscountCard(), amount);
+        amount = applyDiscount(vehicle.getDiscountCard(), amount);
 
         return amount;
     }
@@ -133,7 +141,8 @@ public class ParkingService {
         }
     }
 
-    public String registerVehicle(VehicleDto vehicleDto) throws Exception {
+    public String registerVehicle(VehicleDto vehicleDto)
+            throws NoAvailableSpacesException, VehicleAlreadyRegisteredException {
 
         Vehicle vehicle = new Vehicle();
 
@@ -141,7 +150,12 @@ public class ParkingService {
 
         if (requiredSpaces > getAvailableSpacesCount()) {
 
-            throw new Exception("No available spaces");
+            throw new NoAvailableSpacesException("No available spaces");
+        }
+
+        if (vehicleRepository.findByVehicleNumber(vehicleDto.getVehicleNumber()) != null) {
+
+            throw new VehicleAlreadyRegisteredException("Vehicle is already registered");
         }
 
 
@@ -163,14 +177,14 @@ public class ParkingService {
         return vehicle.getVehicleNumber();
     }
 
-    public double deregisterVehicle(String vehicleNumber) {
+    public double deregisterVehicle(String vehicleNumber) throws VehicleNotFoundException {
 
         double dueAmount = calculateDueAmount(vehicleNumber);
 
         Vehicle vehicle = vehicleRepository.findByVehicleNumber(vehicleNumber);
-        vehicleRepository.delete(vehicle);
-
         ParkingSpace parkingSpace = parkingSpaceRepository.findByVehicleNumber(vehicleNumber);
+
+        vehicleRepository.delete(vehicle);
         parkingSpaceRepository.delete(parkingSpace);
 
         return dueAmount;
