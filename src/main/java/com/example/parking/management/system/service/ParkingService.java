@@ -79,7 +79,7 @@ public class ParkingService {
         return amount;
     }
 
-    private boolean isDayTime(LocalDateTime entryTime, LocalDateTime exitTime) {
+    boolean isDayTime(LocalDateTime entryTime, LocalDateTime exitTime) {
 
         LocalDateTime daytimeStart = LocalDateTime.of(LocalDate.now(), LocalTime.of(8, 0));
         LocalDateTime daytimeEnd = LocalDateTime.of(LocalDate.now(), LocalTime.of(18, 0));
@@ -103,7 +103,7 @@ public class ParkingService {
 
     }
 
-    private double calculateDuration(LocalDateTime entryTime, LocalDateTime exitTime) {
+    double calculateDuration(LocalDateTime entryTime, LocalDateTime exitTime) {
 
         int entryHour = entryTime.getHour();
         int entryMinute = entryTime.getMinute();
@@ -121,7 +121,7 @@ public class ParkingService {
         return hours + (minutes / 60.0);
     }
 
-    private double applyDiscount(String discountCard, double dueAmount) {
+    double applyDiscount(String discountCard, double dueAmount) {
 
         if (discountCard.equals(DiscountCard.Silver.name())) {
 
@@ -167,7 +167,7 @@ public class ParkingService {
 
         parkingSpace.setSpaceNumber(requiredSpaces);
 
-        parkingSpace.setVehicleNumber(vehicleDto.getVehicleNumber());
+        parkingSpace.setVehicleNumber(vehicle.getVehicleNumber());
 
         parkingSpaceRepository.save(parkingSpace);
 
