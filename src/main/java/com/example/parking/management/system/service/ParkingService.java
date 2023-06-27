@@ -1,6 +1,8 @@
 package com.example.parking.management.system.service;
 
 import com.example.parking.management.system.model.Vehicle;
+import com.example.parking.management.system.repository.VehicleRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -9,6 +11,14 @@ import java.time.LocalDateTime;
 public class ParkingService {
 
     private static final int MAX_CAPACITY = 200;
+
+    private final VehicleRepository vehicleRepository;
+
+    @Autowired
+    public ParkingService(VehicleRepository vehicleRepository) {
+
+        this.vehicleRepository = vehicleRepository;
+    }
 
     public int getAvailableSpaces() {
 
