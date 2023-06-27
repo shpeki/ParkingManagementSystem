@@ -5,11 +5,11 @@ import com.example.parking.management.system.exceptions.VehicleAlreadyRegistered
 import com.example.parking.management.system.exceptions.VehicleNotFoundException;
 import com.example.parking.management.system.model.ParkingSpace;
 import com.example.parking.management.system.model.Vehicle;
-import com.example.parking.management.system.model.dto.VehicleDto;
+import com.example.parking.management.system.dto.VehicleDto;
 import com.example.parking.management.system.repository.ParkingSpaceRepository;
 import com.example.parking.management.system.repository.VehicleRepository;
-import com.example.parking.management.system.util.DiscountCard;
-import com.example.parking.management.system.util.VehicleCategory;
+import com.example.parking.management.system.enums.DiscountCard;
+import com.example.parking.management.system.enums.VehicleCategory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -125,19 +125,16 @@ public class ParkingService {
 
         if (discountCard.equals(DiscountCard.Silver.name())) {
 
-            return dueAmount * 0.9;
+            return dueAmount * DiscountCard.Silver.getValue();
 
         } else if (discountCard.equals(DiscountCard.Gold.name())) {
 
-            return dueAmount * 0.85;
-
-        } else if (discountCard.equals(DiscountCard.Platinum.name())) {
-
-            return dueAmount * 0.80;
+            return dueAmount * DiscountCard.Gold.getValue();
 
         } else {
 
-            return 0.0;
+            return dueAmount * DiscountCard.Platinum.getValue();
+
         }
     }
 
@@ -146,7 +143,7 @@ public class ParkingService {
 
         Vehicle vehicle = new Vehicle();
 
-        int requiredSpaces = getRequiredSpacesForCategory(vehicleDto.getCategory());
+        int requiredSpaces = getRequiredSpacesForCategory(vehicleDto.getCategory().toString());
 
         if (requiredSpaces > getAvailableSpacesCount()) {
 
@@ -160,9 +157,9 @@ public class ParkingService {
 
 
         vehicle.setVehicleNumber(vehicleDto.getVehicleNumber());
-        vehicle.setCategory(vehicleDto.getCategory());
+        vehicle.setCategory(vehicleDto.getCategory().toString());
         vehicle.setEntryTime(LocalDateTime.now());
-        vehicle.setDiscountCard(vehicleDto.getDiscountCard());
+        vehicle.setDiscountCard(vehicleDto.getDiscountCard().toString());
 
         vehicleRepository.save(vehicle);
 
@@ -194,16 +191,15 @@ public class ParkingService {
 
         if (category.equals(VehicleCategory.A.name())) {
 
-            return 1;
+            return VehicleCategory.A.getValue();
+
         } else if (category.equals(VehicleCategory.B.name())) {
 
-            return 2;
-        } else if (category.equals(VehicleCategory.C.name())) {
+            return VehicleCategory.B.getValue();
 
-            return 4;
         } else {
 
-            return -1;
+            return VehicleCategory.C.getValue();
         }
     }
 }

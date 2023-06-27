@@ -4,7 +4,7 @@ import com.example.parking.management.system.exceptions.NoAvailableSpacesExcepti
 import com.example.parking.management.system.exceptions.NoAvailableSpacesHttpStatus;
 import com.example.parking.management.system.exceptions.VehicleAlreadyRegisteredException;
 import com.example.parking.management.system.exceptions.VehicleNotFoundException;
-import com.example.parking.management.system.model.dto.VehicleDto;
+import com.example.parking.management.system.dto.VehicleDto;
 import com.example.parking.management.system.service.ParkingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
