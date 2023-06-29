@@ -50,7 +50,7 @@ public class ParkingService {
         }
 
         LocalDateTime entryTime = vehicle.getEntryTime();
-        vehicle.setExitTime(LocalDateTime.now());
+        vehicle.setExitTime(LocalDateTime.now().withSecond(0).withNano(0).plusMinutes(1));
         LocalDateTime exitTime = vehicle.getExitTime();
 
         double hourlyRate;
@@ -116,7 +116,7 @@ public class ParkingService {
 
         if (requiredSpaces > getAvailableSpacesCount()) {
 
-            throw new NoAvailableSpacesException("No available spaces");
+            throw new NoAvailableSpacesException("There are no available spaces, the parking is full");
         }
 
         if (vehicleRepository.findByVehicleNumber(vehicleDto.getVehicleNumber()) != null) {
@@ -124,10 +124,9 @@ public class ParkingService {
             throw new VehicleAlreadyRegisteredException("Vehicle is already registered");
         }
 
-
         vehicle.setVehicleNumber(vehicleDto.getVehicleNumber());
         vehicle.setCategory(vehicleDto.getCategory().toString());
-        vehicle.setEntryTime(LocalDateTime.now());
+        vehicle.setEntryTime(LocalDateTime.now().withSecond(0).withNano(0).plusMinutes(1));
         vehicle.setDiscountCard(vehicleDto.getDiscountCard().toString());
 
         vehicleRepository.save(vehicle);
