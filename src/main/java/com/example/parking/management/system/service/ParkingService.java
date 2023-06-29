@@ -12,7 +12,6 @@ import com.example.parking.management.system.enums.DiscountCard;
 import com.example.parking.management.system.enums.VehicleCategory;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
@@ -42,6 +41,9 @@ public class ParkingService {
 
         Vehicle vehicle = vehicleRepository.findByVehicleNumber(vehicleNumber);
 
+        double totalDueAmount = 0.0;
+
+
         if (vehicle == null) {
 
             throw new VehicleNotFoundException("Vehicle not found");
@@ -53,75 +55,42 @@ public class ParkingService {
 
         double hourlyRate;
 
-        if (vehicle.getCategory().equals(VehicleCategory.A.name())) {
+        while (entryTime.isBefore(exitTime)) {
 
-            hourlyRate = isDayTime(entryTime, exitTime) ? 3.0 : 2.0;
+            if (vehicle.getCategory().equals(VehicleCategory.A.name())) {
 
-        } else if (vehicle.getCategory().equals(VehicleCategory.B.name())) {
+                hourlyRate = isDayTime(entryTime) ? 3.0 : 2.0;
+                totalDueAmount += hourlyRate;
 
-            hourlyRate = isDayTime(entryTime, exitTime) ? 6.0 : 4.0;
+            } else if (vehicle.getCategory().equals(VehicleCategory.B.name())) {
 
-        } else if (vehicle.getCategory().equals(VehicleCategory.C.name())) {
+                hourlyRate = isDayTime(entryTime) ? 6.0 : 4.0;
+                totalDueAmount += hourlyRate;
 
-            hourlyRate = isDayTime(entryTime, exitTime) ? 12.0 : 8.0;
+            } else {
 
-        } else {
+                hourlyRate = isDayTime(entryTime) ? 12.0 : 8.0;
+                totalDueAmount += hourlyRate;
+            }
 
-            return 0.0;
+            entryTime = entryTime.plusHours(1);
+
         }
 
-        double duration = calculateDuration(entryTime, exitTime);
+        totalDueAmount = applyDiscount(vehicle.getDiscountCard(), totalDueAmount);
 
-        double amount = hourlyRate * duration;
-
-        amount = applyDiscount(vehicle.getDiscountCard(), amount);
-
-        return amount;
+        return totalDueAmount;
     }
 
-    boolean isDayTime(LocalDateTime entryTime, LocalDateTime exitTime) {
+    private boolean isDayTime(LocalDateTime entryTime) {
+        LocalTime daytimeStart = LocalTime.of(8, 0);
+        LocalTime daytimeEnd = LocalTime.of(18, 0);
+        LocalTime entryTimeOfDay = entryTime.toLocalTime();
 
-        LocalDateTime daytimeStart = LocalDateTime.of(LocalDate.now(), LocalTime.of(8, 0));
-        LocalDateTime daytimeEnd = LocalDateTime.of(LocalDate.now(), LocalTime.of(18, 0));
-
-        boolean isDaytime;
-
-        if (exitTime.isBefore(daytimeStart) || exitTime.equals(daytimeStart)) {
-
-            isDaytime = !entryTime.isAfter(exitTime);
-
-        } else if (entryTime.isAfter(daytimeEnd) || entryTime.equals(daytimeEnd)) {
-
-            isDaytime = !exitTime.isBefore(entryTime);
-
-        } else {
-
-            isDaytime = true;
-        }
-
-        return isDaytime;
-
+        return entryTimeOfDay.isAfter(daytimeStart) && entryTimeOfDay.isBefore(daytimeEnd);
     }
 
-    double calculateDuration(LocalDateTime entryTime, LocalDateTime exitTime) {
-
-        int entryHour = entryTime.getHour();
-        int entryMinute = entryTime.getMinute();
-        int exitHour = exitTime.getHour();
-        int exitMinute = exitTime.getMinute();
-
-        int hours = exitHour - entryHour;
-        int minutes = exitMinute - entryMinute;
-
-        if (minutes < 0) {
-            hours--;
-            minutes += 60;
-        }
-
-        return hours + (minutes / 60.0);
-    }
-
-    double applyDiscount(String discountCard, double dueAmount) {
+    private double applyDiscount(String discountCard, double dueAmount) {
 
         if (discountCard.equals(DiscountCard.Silver.name())) {
 
