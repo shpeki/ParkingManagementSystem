@@ -1,9 +1,6 @@
 package com.example.parking.management.system.controller;
 
-import com.example.parking.management.system.exceptions.NoAvailableSpacesException;
-import com.example.parking.management.system.exceptions.NoAvailableSpacesHttpStatus;
-import com.example.parking.management.system.exceptions.VehicleAlreadyRegisteredException;
-import com.example.parking.management.system.exceptions.VehicleNotFoundException;
+import com.example.parking.management.system.exceptions.*;
 import com.example.parking.management.system.dto.VehicleDto;
 import com.example.parking.management.system.service.ParkingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,12 +43,12 @@ public class ParkingController {
     }
 
     @PostMapping(value = "/register-vehicle", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> registerVehicle(@RequestBody VehicleDto vehicle) {
+    public ResponseEntity<String> registerVehicle(@RequestBody VehicleDto vehicleDto) {
 
         try {
 
-            parkingService.registerVehicle(vehicle);
-            return ResponseEntity.ok(vehicle.getVehicleNumber().toUpperCase());
+            parkingService.registerVehicle(vehicleDto);
+            return ResponseEntity.ok(vehicleDto.getVehicleNumber().toUpperCase());
 
         } catch (NoAvailableSpacesException e) {
 
@@ -63,6 +60,10 @@ public class ParkingController {
         } catch (VehicleAlreadyRegisteredException ve) {
 
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("The vehicle is already registered");
+
+        } catch (DiscountCardNotFound de) {
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("The discount card is not found");
         }
     }
 

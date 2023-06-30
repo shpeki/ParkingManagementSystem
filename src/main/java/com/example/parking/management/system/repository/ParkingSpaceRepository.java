@@ -9,9 +9,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ParkingSpaceRepository extends JpaRepository<ParkingSpace, Integer> {
 
-    @Query("SELECT SUM(ps.spaceNumber) FROM ParkingSpace ps")
+    @Query("SELECT SUM(ps.requiredSpace) FROM ParkingSpace ps")
     Integer calculateSumOfSpaceNumbers();
 
-    ParkingSpace findByVehicleNumber(String vehicleNumber);
+    ParkingSpace findByVehicle_VehicleNumber(String vehicleNumber);
 
 }

@@ -3,30 +3,35 @@ package com.example.parking.management.system.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "parking_spaces")
+@Table(name = "parking_space")
 public class ParkingSpace {
 
     @Id
-    @Column(name = "space_number")
-    private int spaceNumber;
+    @Column(name = "required_space")
+    private int requiredSpace;
 
-    @Column(name = "vehicle_number")
-    private String vehicleNumber;
+    @OneToOne
+    @JoinColumn(name = "vehicle_number", referencedColumnName = "vehicle_number")
+    private Vehicle vehicle;
 
 
-    public int getSpaceNumber() {
-        return spaceNumber;
+    public int getRequiredSpace() {
+
+        return requiredSpace;
     }
 
-    public void setSpaceNumber(int spaceNumber) {
-        this.spaceNumber = spaceNumber;
+    public void setRequiredSpace(int requiredSpace) {
+
+        this.requiredSpace = requiredSpace;
     }
 
-    public String getVehicleNumber() {
-        return vehicleNumber;
+    public Vehicle getVehicle() {
+
+        return vehicle;
     }
 
-    public void setVehicleNumber(String vehicleNumber) {
-        this.vehicleNumber = vehicleNumber;
+    public void setVehicle(Vehicle vehicle) {
+
+        this.vehicle = vehicle;
     }
 }

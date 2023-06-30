@@ -1,14 +1,11 @@
 package com.example.parking.management.system.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "vehicles")
+@Table(name = "vehicle")
 public class Vehicle {
 
     @Id
@@ -24,8 +21,8 @@ public class Vehicle {
     @Column(name = "exit_time")
     private LocalDateTime exitTime;
 
-    @Column(name = "discount_card")
-    private String discountCard;
+    @Column(name = "discount_card_type")
+    private String discountCardType;
 
 
     public String getVehicleNumber() {
@@ -68,14 +65,14 @@ public class Vehicle {
         this.exitTime = exitTime;
     }
 
-    public String getDiscountCard() {
+    public String getDiscountCardType() {
 
-        return discountCard;
+        return discountCardType;
     }
 
-    public void setDiscountCard(String discountCard) {
+    public void setDiscountCardType(String discountCardType) {
 
-        this.discountCard = discountCard;
+        this.discountCardType = discountCardType;
     }
 
     @Override
@@ -85,7 +82,7 @@ public class Vehicle {
                 ", category='" + category + '\'' +
                 ", entryTime=" + entryTime +
                 ", exitTime=" + exitTime +
-                ", discountCard='" + discountCard + '\'' +
+                ", discountCard='" + discountCardType + '\'' +
                 '}';
     }
 }

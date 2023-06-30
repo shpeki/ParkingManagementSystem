@@ -1,19 +1,22 @@
 package com.example.parking.management.system.service;
 
+import com.example.parking.management.system.exceptions.DiscountCardNotFound;
 import com.example.parking.management.system.exceptions.NoAvailableSpacesException;
 import com.example.parking.management.system.exceptions.VehicleAlreadyRegisteredException;
 import com.example.parking.management.system.exceptions.VehicleNotFoundException;
+import com.example.parking.management.system.model.DiscountCard;
 import com.example.parking.management.system.model.ParkingSpace;
 import com.example.parking.management.system.model.Vehicle;
 import com.example.parking.management.system.dto.VehicleDto;
 import com.example.parking.management.system.repository.ParkingSpaceRepository;
 import com.example.parking.management.system.repository.VehicleRepository;
-import com.example.parking.management.system.enums.DiscountCard;
+import com.example.parking.management.system.repository.DiscountCardRepository;
 import com.example.parking.management.system.enums.VehicleCategory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 @Service
 public class ParkingService {
@@ -23,10 +26,17 @@ public class ParkingService {
     private final VehicleRepository vehicleRepository;
     private final ParkingSpaceRepository parkingSpaceRepository;
 
-    public ParkingService(VehicleRepository vehicleRepository, ParkingSpaceRepository parkingSpaceRepository) {
+    private final DiscountCardRepository discountCardRepository;
+
+    public ParkingService(
+            VehicleRepository vehicleRepository,
+            ParkingSpaceRepository parkingSpaceRepository,
+            DiscountCardRepository discountCardRepository  ) {
 
         this.vehicleRepository = vehicleRepository;
         this.parkingSpaceRepository = parkingSpaceRepository;
+        this.discountCardRepository = discountCardRepository;
+
     }
 
     public int getAvailableSpacesCount() {
@@ -77,7 +87,7 @@ public class ParkingService {
 
         }
 
-        totalDueAmount = applyDiscount(vehicle.getDiscountCard(), totalDueAmount);
+        totalDueAmount = applyDiscount(vehicle.getDiscountCardType(), totalDueAmount);
 
         return totalDueAmount;
     }
@@ -90,25 +100,26 @@ public class ParkingService {
         return entryTimeOfDay.isAfter(daytimeStart) && entryTimeOfDay.isBefore(daytimeEnd);
     }
 
-    private double applyDiscount(String discountCard, double dueAmount) {
+    private double applyDiscount(String discountCardType, double dueAmount) {
 
-        if (discountCard.equals(DiscountCard.Silver.name())) {
+        List<DiscountCard> discountCards = discountCardRepository.findAll();
 
-            return dueAmount * DiscountCard.Silver.getValue();
+        DiscountCard discountCard = discountCards
+                .stream()
+                .filter(card -> card.getCardType().equals(discountCardType))
+                .findFirst()
+                .orElse(null);
 
-        } else if (discountCard.equals(DiscountCard.Gold.name())) {
+        double asd = dueAmount * discountCard.getDiscount();
 
-            return dueAmount * DiscountCard.Gold.getValue();
 
-        } else {
-
-            return dueAmount * DiscountCard.Platinum.getValue();
-
-        }
+       return dueAmount - dueAmount * (discountCard.getDiscount()/100);
     }
 
     public String registerVehicle(VehicleDto vehicleDto)
-            throws NoAvailableSpacesException, VehicleAlreadyRegisteredException {
+            throws NoAvailableSpacesException,
+            VehicleAlreadyRegisteredException,
+            DiscountCardNotFound {
 
         Vehicle vehicle = new Vehicle();
 
@@ -127,15 +138,25 @@ public class ParkingService {
         vehicle.setVehicleNumber(vehicleDto.getVehicleNumber());
         vehicle.setCategory(vehicleDto.getCategory().toString());
         vehicle.setEntryTime(LocalDateTime.now().withSecond(0).withNano(0).plusMinutes(1));
-        vehicle.setDiscountCard(vehicleDto.getDiscountCard().toString());
+        vehicle.setDiscountCardType(vehicleDto.getDiscountCardType());
+
+        if (discountCardRepository.findByCardType(vehicleDto.getDiscountCardType()) != null) {
+
+            DiscountCard discountCard = discountCardRepository.findByCardType(vehicleDto.getDiscountCardType());
+            vehicle.setDiscountCardType(discountCard.getCardType());
+
+        } else {
+
+            throw new DiscountCardNotFound("Discount card not found");
+        }
 
         vehicleRepository.save(vehicle);
 
         ParkingSpace parkingSpace = new ParkingSpace();
 
-        parkingSpace.setSpaceNumber(requiredSpaces);
+        parkingSpace.setRequiredSpace(requiredSpaces);
 
-        parkingSpace.setVehicleNumber(vehicle.getVehicleNumber());
+        parkingSpace.setVehicle(vehicle);
 
         parkingSpaceRepository.save(parkingSpace);
 
@@ -147,10 +168,10 @@ public class ParkingService {
         double dueAmount = calculateDueAmount(vehicleNumber);
 
         Vehicle vehicle = vehicleRepository.findByVehicleNumber(vehicleNumber);
-        ParkingSpace parkingSpace = parkingSpaceRepository.findByVehicleNumber(vehicleNumber);
+        ParkingSpace parkingSpace = parkingSpaceRepository.findByVehicle_VehicleNumber(vehicleNumber);
 
-        vehicleRepository.delete(vehicle);
         parkingSpaceRepository.delete(parkingSpace);
+        vehicleRepository.delete(vehicle);
 
         return dueAmount;
     }
