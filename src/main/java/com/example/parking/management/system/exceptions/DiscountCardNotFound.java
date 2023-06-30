@@ -2,7 +2,7 @@ package com.example.parking.management.system.exceptions;
 
 import java.io.Serial;
 
-public class DiscountCardNotFound extends Exception{
+public class DiscountCardNotFound extends ParkingSystemBusinessException{
 
     @Serial
     private static final long serialVersionUID = 881538656609536842L;

@@ -1,9 +1,6 @@
 package com.example.parking.management.system.service;
 
-import com.example.parking.management.system.exceptions.DiscountCardNotFound;
-import com.example.parking.management.system.exceptions.NoAvailableSpacesException;
-import com.example.parking.management.system.exceptions.VehicleAlreadyRegisteredException;
-import com.example.parking.management.system.exceptions.VehicleNotFoundException;
+import com.example.parking.management.system.exceptions.*;
 import com.example.parking.management.system.model.DiscountCard;
 import com.example.parking.management.system.model.ParkingSpace;
 import com.example.parking.management.system.model.Vehicle;
@@ -53,7 +50,7 @@ public class ParkingService {
         return MAX_CAPACITY - occupiedSpaces;
     }
 
-    public double calculateDueAmount(String vehicleNumber) throws VehicleNotFoundException {
+    public double calculateDueAmount(String vehicleNumber) {
 
         Vehicle vehicle = vehicleRepository.findByVehicleNumber(vehicleNumber);
 
@@ -111,10 +108,7 @@ public class ParkingService {
        return dueAmount - dueAmount * (discountCard.getDiscount()/100);
     }
 
-    public String registerVehicle(VehicleDto vehicleDto)
-            throws NoAvailableSpacesException,
-            VehicleAlreadyRegisteredException,
-            DiscountCardNotFound {
+    public String registerVehicle(VehicleDto vehicleDto) {
 
         Vehicle vehicle = new Vehicle();
 
@@ -127,7 +121,7 @@ public class ParkingService {
 
         if (vehicleRepository.findByVehicleNumber(vehicleDto.getVehicleNumber()) != null) {
 
-            throw new VehicleAlreadyRegisteredException("Vehicle is already registered");
+            throw new VehicleAlreadyRegisteredException ("Vehicle is already registered");
         }
 
         vehicle.setVehicleNumber(vehicleDto.getVehicleNumber());
@@ -158,7 +152,7 @@ public class ParkingService {
         return vehicle.getVehicleNumber();
     }
 
-    public double deregisterVehicle(String vehicleNumber) throws VehicleNotFoundException {
+    public double deregisterVehicle(String vehicleNumber) {
 
         double dueAmount = calculateDueAmount(vehicleNumber);
 
