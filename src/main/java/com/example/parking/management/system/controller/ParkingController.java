@@ -1,6 +1,5 @@
 package com.example.parking.management.system.controller;
 
-import com.example.parking.management.system.exceptions.*;
 import com.example.parking.management.system.dto.VehicleDto;
 import com.example.parking.management.system.service.ParkingService;
 import org.springframework.beans.factory.annotation.Autowired;
