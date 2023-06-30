@@ -8,10 +8,11 @@ import com.example.parking.management.system.model.DiscountCard;
 import com.example.parking.management.system.model.ParkingSpace;
 import com.example.parking.management.system.model.Vehicle;
 import com.example.parking.management.system.dto.VehicleDto;
+import com.example.parking.management.system.model.VehicleCategory;
 import com.example.parking.management.system.repository.ParkingSpaceRepository;
+import com.example.parking.management.system.repository.VehicleCategoryRepository;
 import com.example.parking.management.system.repository.VehicleRepository;
 import com.example.parking.management.system.repository.DiscountCardRepository;
-import com.example.parking.management.system.enums.VehicleCategory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,18 +25,23 @@ public class ParkingService {
     private static final int MAX_CAPACITY = 200;
 
     private final VehicleRepository vehicleRepository;
+
     private final ParkingSpaceRepository parkingSpaceRepository;
 
     private final DiscountCardRepository discountCardRepository;
 
+    private final VehicleCategoryRepository vehicleCategoryRepository;
+
     public ParkingService(
             VehicleRepository vehicleRepository,
             ParkingSpaceRepository parkingSpaceRepository,
-            DiscountCardRepository discountCardRepository  ) {
+            DiscountCardRepository discountCardRepository,
+            VehicleCategoryRepository vehicleCategoryRepository) {
 
         this.vehicleRepository = vehicleRepository;
         this.parkingSpaceRepository = parkingSpaceRepository;
         this.discountCardRepository = discountCardRepository;
+        this.vehicleCategoryRepository = vehicleCategoryRepository;
 
     }
 
@@ -67,21 +73,11 @@ public class ParkingService {
 
         while (entryTime.isBefore(exitTime)) {
 
-            if (vehicle.getCategory().equals(VehicleCategory.A.name())) {
+            VehicleCategory vehicleCategory = vehicleCategoryRepository.findByVehicleCategory(vehicle.getCategory());
 
-                hourlyRate = isDayTime(entryTime) ? 3.0 : 2.0;
-                totalDueAmount += hourlyRate;
+            hourlyRate = isDayTime(entryTime) ? vehicleCategory.getDayTimeRate() : vehicleCategory.getNightTimeRate();
 
-            } else if (vehicle.getCategory().equals(VehicleCategory.B.name())) {
-
-                hourlyRate = isDayTime(entryTime) ? 6.0 : 4.0;
-                totalDueAmount += hourlyRate;
-
-            } else {
-
-                hourlyRate = isDayTime(entryTime) ? 12.0 : 8.0;
-                totalDueAmount += hourlyRate;
-            }
+            totalDueAmount += hourlyRate;
 
             entryTime = entryTime.plusHours(1);
 
@@ -112,7 +108,6 @@ public class ParkingService {
 
         double asd = dueAmount * discountCard.getDiscount();
 
-
        return dueAmount - dueAmount * (discountCard.getDiscount()/100);
     }
 
@@ -136,7 +131,7 @@ public class ParkingService {
         }
 
         vehicle.setVehicleNumber(vehicleDto.getVehicleNumber());
-        vehicle.setCategory(vehicleDto.getCategory().toString());
+        vehicle.setCategory(vehicleDto.getCategory());
         vehicle.setEntryTime(LocalDateTime.now().withSecond(0).withNano(0).plusMinutes(1));
         vehicle.setDiscountCardType(vehicleDto.getDiscountCardType());
 
@@ -178,17 +173,9 @@ public class ParkingService {
 
     private int getRequiredSpacesForCategory(String category) {
 
-        if (category.equals(VehicleCategory.A.name())) {
 
-            return VehicleCategory.A.getValue();
+        VehicleCategory vehicleCategory = vehicleCategoryRepository.findByVehicleCategory(category);
 
-        } else if (category.equals(VehicleCategory.B.name())) {
-
-            return VehicleCategory.B.getValue();
-
-        } else {
-
-            return VehicleCategory.C.getValue();
-        }
+        return vehicleCategory.getRequiredSpace();
     }
 }

@@ -1,7 +1,6 @@
 package com.example.parking.management.system.service;
 
 import com.example.parking.management.system.dto.VehicleDto;
-import com.example.parking.management.system.enums.VehicleCategory;
 import com.example.parking.management.system.exceptions.DiscountCardNotFound;
 import com.example.parking.management.system.exceptions.NoAvailableSpacesException;
 import com.example.parking.management.system.exceptions.VehicleAlreadyRegisteredException;
@@ -11,6 +10,7 @@ import com.example.parking.management.system.model.Vehicle;
 import com.example.parking.management.system.repository.ParkingSpaceRepository;
 import com.example.parking.management.system.repository.VehicleRepository;
 import com.example.parking.management.system.repository.DiscountCardRepository;
+import com.example.parking.management.system.repository.VehicleCategoryRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,10 +32,17 @@ class ParkingServiceTest {
     @Mock
     private DiscountCardRepository discountCardRepository;
 
+    @Mock
+    private VehicleCategoryRepository vehicleCategoryRepository;
+
     @BeforeEach
     void setup() {
         MockitoAnnotations.openMocks(this);
-        parkingService = new ParkingService(vehicleRepository, parkingSpaceRepository, discountCardRepository);
+        parkingService = new ParkingService(
+                vehicleRepository,
+                parkingSpaceRepository,
+                discountCardRepository,
+                vehicleCategoryRepository);
     }
 
     @Test
@@ -46,7 +53,7 @@ class ParkingServiceTest {
 
         VehicleDto vehicleDto = new VehicleDto();
         vehicleDto.setVehicleNumber("ABC123");
-        vehicleDto.setCategory(VehicleCategory.valueOf("A"));
+//        vehicleDto.setCategory(VehicleCategory.valueOf("A"));
 //        vehicleDto.setDiscountCardType(DiscountCard.valueOf("Silver"));
 
         when(parkingSpaceRepository.calculateSumOfSpaceNumbers()).thenReturn(10);
@@ -66,7 +73,7 @@ class ParkingServiceTest {
 
         VehicleDto vehicleDto = new VehicleDto();
         vehicleDto.setVehicleNumber("ABC123");
-        vehicleDto.setCategory(VehicleCategory.valueOf("A"));
+//        vehicleDto.setCategory(VehicleCategory.valueOf("A"));
 //        vehicleDto.setDiscountCardType();
 
         when(parkingSpaceRepository.calculateSumOfSpaceNumbers()).thenReturn(200);
@@ -81,7 +88,7 @@ class ParkingServiceTest {
 
         VehicleDto vehicleDto = new VehicleDto();
         vehicleDto.setVehicleNumber("ABC123");
-        vehicleDto.setCategory(VehicleCategory.valueOf("A"));
+//        vehicleDto.setCategory(VehicleCategory.valueOf("A"));
 //        vehicleDto.setDiscountCardType(DiscountCard.valueOf("Silver"));
 
         when(parkingSpaceRepository.calculateSumOfSpaceNumbers()).thenReturn(10);

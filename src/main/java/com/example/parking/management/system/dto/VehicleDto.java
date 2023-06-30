@@ -1,11 +1,10 @@
 package com.example.parking.management.system.dto;
 
-import com.example.parking.management.system.enums.VehicleCategory;
 
 public class VehicleDto {
 
     private String vehicleNumber;
-    private VehicleCategory category;
+    private String category;
     private String discountCardType;
 
     public String getVehicleNumber() {
@@ -18,12 +17,12 @@ public class VehicleDto {
         this.vehicleNumber = vehicleNumber;
     }
 
-    public VehicleCategory getCategory() {
+    public String getCategory() {
 
         return category;
     }
 
-    public void setCategory(VehicleCategory category) {
+    public void setCategory(String category) {
 
         this.category = category;
     }
